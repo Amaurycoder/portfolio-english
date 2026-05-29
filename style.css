@@ -1,0 +1,498 @@
+/* ==========================================================================
+   Premium Editorial Photography Portfolio CSS
+   ========================================================================== */
+:root {
+    /* Colors - Light Theme (Default) */
+    --bg-color: #fcfcfc;
+    --text-primary: #111111;
+    --text-secondary: #666666;
+    --placeholder-bg: #e5e5e5;
+    
+    /* Overlay & Lightbox */
+    --caption-bg: rgba(255, 255, 255, 0.7);
+    --caption-text: #000000;
+    --lightbox-backdrop: rgba(255, 255, 255, 0.95);
+    --lightbox-shadow: rgba(0, 0, 0, 0.15);
+    --nav-btn-color: rgba(0, 0, 0, 0.4);
+    --nav-btn-hover: rgba(0, 0, 0, 1);
+    --border-color: rgba(0, 0, 0, 0.08);
+
+    /* Typography */
+    --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-serif: 'Playfair Display', Georgia, serif;
+    
+    /* Layout */
+    --container-width: 1400px;
+    --spacing: 4vw;
+    
+    /* Transitions */
+    --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dark Mode Overrides (Adapts to browser settings) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #050505;
+        --text-primary: #ffffff;
+        --text-secondary: #888888;
+        --placeholder-bg: #111111;
+        
+        --caption-bg: rgba(0, 0, 0, 0.55);
+        --caption-text: #ffffff;
+        --lightbox-backdrop: rgba(0, 0, 0, 0.98);
+        --lightbox-shadow: rgba(0, 0, 0, 0.8);
+        --nav-btn-color: rgba(255, 255, 255, 0.4);
+        --nav-btn-hover: rgba(255, 255, 255, 1);
+        --border-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.4s ease, color 0.4s ease;
+    overflow-x: hidden;
+}
+
+/* Hide native cursor for desktop devices to show custom cursor */
+@media (pointer: fine) {
+    body {
+        cursor: none;
+    }
+    button, a {
+        cursor: pointer;
+    }
+}
+
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 var(--spacing);
+}
+
+/* --------------------------------------------------------------------------
+   Custom Cursor
+   -------------------------------------------------------------------------- */
+.custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    background-color: var(--text-primary);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: width 0.4s var(--transition-smooth), height 0.4s var(--transition-smooth), background-color 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Hardware acceleration */
+    will-change: transform;
+}
+
+.custom-cursor .cursor-text {
+    color: var(--bg-color);
+    font-size: 0px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease, font-size 0.4s var(--transition-smooth);
+}
+
+.custom-cursor.hover-image {
+    width: 80px;
+    height: 80px;
+    background-color: var(--text-primary);
+}
+
+.custom-cursor.hover-image .cursor-text {
+    font-size: 11px;
+    opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Hero Section & Parallax
+   -------------------------------------------------------------------------- */
+.hero {
+    height: 75vh;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-bg {
+    position: absolute;
+    top: -15%;
+    left: 0;
+    width: 100%;
+    height: 130%; /* Allows room for parallax scrolling without showing edges */
+    background: linear-gradient(to bottom, rgba(12, 12, 14, 0.6) 0%, var(--bg-color) 100%),
+                url('./images/thumbnails/abstract.jpg') no-repeat center center / cover;
+    z-index: 0;
+    will-change: transform;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    color: #ffffff; /* Override theme to stay visible on dark background */
+    opacity: 0;
+    animation: textReveal 1.2s var(--transition-smooth) forwards;
+}
+
+.hero-subtitle {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+    font-weight: 300;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: #cccccc;
+    opacity: 0;
+    animation: textReveal 1.2s var(--transition-smooth) 0.3s forwards;
+}
+
+.artist-statement {
+    max-width: 650px;
+    margin: 3rem auto 0;
+    font-family: var(--font-serif);
+    font-size: clamp(1.1rem, 2vw, 1.3rem);
+    font-style: italic;
+    color: #eeeeee;
+    line-height: 1.7;
+    opacity: 0;
+    animation: textReveal 1.2s var(--transition-smooth) 0.6s forwards;
+}
+
+/* --------------------------------------------------------------------------
+   Gallery Layout (True CSS Masonry)
+   -------------------------------------------------------------------------- */
+.gallery-grid {
+    column-count: 3;
+    column-gap: 2rem;
+    padding: 6rem 0 8rem;
+    width: 100%;
+}
+
+/* Base item */
+.gallery-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 2rem;
+    position: relative;
+    /* cursor: none so custom cursor takes over completely, pointer as fallback */
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 2px;
+    
+    /* Scroll Reveal Initial State */
+    opacity: 0;
+    transform: translateY(60px);
+    transition: opacity 1.2s var(--transition-smooth), transform 1.2s var(--transition-smooth);
+}
+
+/* Scroll Reveal End State added via JS */
+.gallery-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Image wrapper */
+.image-wrapper {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--placeholder-bg);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    transition: transform 1.5s var(--transition-smooth), filter 0.8s ease;
+    will-change: transform;
+    filter: contrast(1.02);
+}
+
+/* Caption overlaid seamlessly on hover */
+figcaption {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--caption-bg);
+    color: var(--caption-text);
+    font-family: var(--font-serif);
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: opacity 0.1s linear;
+    z-index: 2;
+    pointer-events: none;
+    text-align: center;
+    padding: 1rem;
+}
+
+/* Hover interactions */
+@media (hover: hover) {
+    .gallery-item:hover img {
+        transform: scale(1.05);
+    }
+    .gallery-item:hover figcaption {
+        opacity: 1;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Lightbox Modal (Presentation Mode)
+   -------------------------------------------------------------------------- */
+.lightbox {
+    border: none;
+    background: transparent;
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.lightbox::backdrop {
+    background: var(--lightbox-backdrop);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.lightbox.active::backdrop {
+    opacity: 1;
+}
+
+.lightbox-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    opacity: 0;
+    transform: scale(0.97);
+    transition: all 0.6s var(--transition-smooth);
+    position: relative;
+}
+
+.lightbox.active .lightbox-content {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.lightbox img {
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    box-shadow: 0 40px 80px var(--lightbox-shadow);
+    transition: opacity 0.25s ease-in-out;
+}
+
+/* Counter & Spinner */
+.lightbox-counter {
+    position: absolute;
+    top: 2.5rem;
+    left: 3rem;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    letter-spacing: 2px;
+    font-size: 1.1rem;
+    z-index: 10;
+}
+
+.lightbox-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    border-top-color: var(--text-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: none;
+    z-index: 5;
+}
+
+.lightbox-caption {
+    margin-top: 2rem;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.8rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 2.5rem;
+    right: 3rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    z-index: 10;
+    padding: 10px;
+    opacity: 0.5;
+    transition: opacity 0.3s ease, transform 0.6s var(--transition-smooth);
+}
+
+.close-btn:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* Navigation Buttons */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--nav-btn-color);
+    cursor: pointer;
+    padding: 2rem;
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    color: var(--nav-btn-hover);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.prev-btn { left: 2vw; }
+.next-btn { right: 2vw; }
+
+.presentation-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    opacity: 0;
+    animation: fadeHint 4s forwards 1.5s;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+.site-footer {
+    padding: 6rem 0;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border-color);
+}
+
+/* --------------------------------------------------------------------------
+   Keyframes
+   -------------------------------------------------------------------------- */
+@keyframes textReveal {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes fadeHint {
+    0% { opacity: 0; }
+    20% { opacity: 0.8; }
+    80% { opacity: 0.8; }
+    100% { opacity: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Layout
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+    .gallery-grid {
+        column-count: 2;
+        column-gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 3.5rem;
+    }
+    
+    .lightbox-counter {
+        top: 1.5rem;
+        left: 1.5rem;
+    }
+
+    .close-btn {
+        top: 1.5rem;
+        right: 1.5rem;
+    }
+
+    .nav-btn {
+        display: none; /* Hide side arrows on small mobile, rely on swipe */
+    }
+}
+
+@media (max-width: 640px) {
+    .gallery-grid {
+        column-count: 1;
+        padding: 2rem 0;
+    }
+    
+    .gallery-item {
+        margin-bottom: 1.5rem;
+    }
+
+    figcaption {
+        font-size: 1.6rem;
+        background: var(--caption-bg);
+        color: var(--caption-text);
+        opacity: 1; /* Keep title visible on mobile since there's no hover */
+        align-items: flex-end;
+        padding-bottom: 2rem;
+    }
+}
